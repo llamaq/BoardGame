@@ -96,8 +96,20 @@ public class HexObject : MonoBehaviour
         isHighlighted = highlight;
         Renderer rend = GetComponent<Renderer>();
 
-        Color color = isHighlighted ? new Color((1f / 255f) * 92f, (1f / 255f) * 211f, (1f / 255f) * 235f, 0.9f) : Color.white;
-        rend.material.SetColor("_Color", color);
+        if (isHighlighted)
+        {
+            Color color = new Color((1f / 255f) * 92f, (1f / 255f) * 211f, (1f / 255f) * 235f, 0.9f);
+
+            if (unit != null && unit.unitTeam == Unit.UnitTeamType.ENEMY)
+                color = Color.red;
+
+            if (unit != null && unit.unitTeam == Unit.UnitTeamType.PLAYER)
+                color = Color.white;
+
+            rend.material.SetColor("_Color", color);
+        }
+        else
+            rend.material.SetColor("_Color", Color.white);
     }
 
     public static HexType GetTypeFromChar(char c)

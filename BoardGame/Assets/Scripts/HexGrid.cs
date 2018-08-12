@@ -4,11 +4,15 @@ using UnityEngine;
 
 public class HexGrid : MonoBehaviour
 {
-    public HexObject prefab;
+    public HexObject hexPrefab;
+    public Unit unitPrefab;
+
+    public HexObject currentSelectedHex = null;
 
     private int width = 5;
     private int height = 7;
     public HexObject[] hexes;
+
 
     void Awake()
     {
@@ -26,26 +30,43 @@ public class HexGrid : MonoBehaviour
         {
             for (int x = 0; x < width; x++)
             {
-                hexes[i] = CreateCell(x, z, Maps.mapArray[index][i]);
+                hexes[i] = CreateCell(x, z, Maps.mapArray[index][i], i);
                 i++;
             }
         }
     }
 
-    HexObject CreateCell(int x, int z, char c)
+    HexObject CreateCell(int x, int z, char c, int i)
     {
         float xPos = x * (HexObject.innerRadius * 0.95f);
         float zPos = (z + x * 0.5f - x / 2) * (HexObject.innerRadius * 1.1f);
         Vector3 pos = new Vector3(xPos, 0f, zPos);
 
-        HexObject hexCell = Instantiate<HexObject>(prefab);
+        HexObject hexCell = Instantiate<HexObject>(hexPrefab);
         hexCell.Coords = new Vector2(x, z);
         hexCell.transform.SetParent(transform, false);
         hexCell.transform.localPosition = pos;
         hexCell.hexType = HexObject.GetTypeFromChar(c);
 
-        if (c == 'k')
-            hexCell.unit = new Unit("");
+        if (c == 'k' || c == 'c' || c == 'b')
+        {
+            Unit unit = Instantiate<Unit>(unitPrefab, hexCell.transform);
+            unit.transform.localPosition = hexCell.transform.localPosition;
+            hexCell.unit = unit;
+
+            Unit.UnitType type;
+            switch (c)
+            {
+                case 'c': type = Unit.UnitType.CAVELRY; break;
+                case 'b': type = Unit.UnitType.BOWMEN; break;
+                default: type = Unit.UnitType.KNIGHT; break;
+
+            }
+            unit.SetUnitType(type);
+
+            unit.unitTeam = i < width * 2 ? Unit.UnitTeamType.PLAYER : Unit.UnitTeamType.ENEMY;
+
+        }
 
         return hexCell;
     }
@@ -77,12 +98,12 @@ public class HexGrid : MonoBehaviour
         switch (unitType)
         {
             case Unit.UnitType.CAVELRY:
-                ArrayList tempList = new ArrayList();
+                List<HexObject> tempList = new List<HexObject>();
                 List<HexObject> closeRangeHexes = GetNeighbours(selectedHex, 1);
 
                 tempList.AddRange(oldList);
 
-                //Remove every hex which is in the inner-ring
+                //Remove every hex which is in the inner-ring, if they are mountains
                 foreach (HexObject closeHex in closeRangeHexes)
                 {
                     tempList.Remove(closeHex);
@@ -105,9 +126,57 @@ public class HexGrid : MonoBehaviour
                             newList.Add(outerHex);
                     }
                 }
+                break;
+            case Unit.UnitType.BOWMEN:
+                tempList = new List<HexObject>();
+                closeRangeHexes = GetNeighbours(selectedHex, 1);
 
+                tempList.AddRange(oldList);
+
+                //Remove every hex which is in the inner-ring, if they are mountains
+                foreach (HexObject closeHex in closeRangeHexes)
+                {
+                    tempList.Remove(closeHex);
+
+                    //Add the inner-ring to the new list
+                    if (closeHex.hexType != HexObject.HexType.MOUNTAIN)
+                        newList.Add(closeHex);
+                }
+
+                //Add the outer-ring to the new list, except if we cannot reach it
+                foreach (HexObject outerHex in tempList)
+                {
+                    Debug.Log("looping!");
+
+                    if (outerHex.unit == null)
+                        continue;
+
+                    //Get the neighbours of every outer hex 
+                    List<HexObject> outerNeighbours = GetNeighbours(outerHex.Coords, 1);
+
+                    foreach (HexObject closeRangeHex in closeRangeHexes)
+                    {
+                        //if one of the neighbours of the outerhex is also in the inner ring and it is not a mountain, a cavalry unit can reach it.
+                        if (outerNeighbours.Contains(closeRangeHex) && closeRangeHex.hexType != HexObject.HexType.MOUNTAIN)
+                            newList.Add(outerHex);
+                    }
+                }
+                break;
+            default:
+                closeRangeHexes = GetNeighbours(selectedHex, 1);
+                tempList = new List<HexObject>();
+                tempList.AddRange(oldList);
+
+                foreach (HexObject hex in closeRangeHexes)
+                {
+                    if (hex.hexType == HexObject.HexType.MOUNTAIN)
+                        tempList.Remove(hex);
+                }
+
+                newList.AddRange(tempList);
                 break;
         }
+
         return newList;
     }
 }

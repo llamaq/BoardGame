@@ -411,7 +411,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee610202debf7ec4fb0cc5efcdaa7847, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 114984730367747540, guid: 55594c140366e78418894ed7ba3c21a0, type: 2}
+  hexPrefab: {fileID: 114984730367747540, guid: 55594c140366e78418894ed7ba3c21a0,
+    type: 2}
+  unitPrefab: {fileID: 114885794533092724, guid: 08cab8fbcf922204aa760e45d18409dd,
+    type: 2}
+  currentSelectedHex: {fileID: 0}
   hexes: []
 --- !u!4 &1136353542
 Transform:
