@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -82,8 +83,16 @@ public class EnemyAI : MonoBehaviour
         //Step 1: Check the nearest neighbours
         scoreList.AddRange(CheckNearestNeighbours(hex, unit));
 
+        //If step 1 failed (no player units next to the unit)
+
+        //Step 2: Check the neighbours further away
         if (scoreList.Count == 0)
             scoreList.AddRange(CheckFurtherNeighbours(hex, unit));
+
+        //Step 3: No one close to us, lets move towards enemies
+        if (scoreList.Count == 0)
+            scoreList.AddRange(CheckMoving(hex, unit));
+
         //==============================================        
 
         HexScoreObject highestScore = null;
@@ -108,7 +117,7 @@ public class EnemyAI : MonoBehaviour
         foreach (HexObject neighbourHex in hexes)
         {
             //If there is no enemy unit next to us, skip to next hex
-            if (neighbourHex.unit == null)
+            if (neighbourHex.unit == null || neighbourHex.unit.unitTeam == Unit.UnitTeamType.ENEMY)
                 continue;
 
             if (neighbourHex.unit.health <= unit.attack)
@@ -146,7 +155,7 @@ public class EnemyAI : MonoBehaviour
         foreach (HexObject neighbourHex in hexes)
         {
             //If there is no unit on it, skip to next hex
-            if (neighbourHex.unit == null)
+            if (neighbourHex.unit == null || neighbourHex.unit.unitTeam == Unit.UnitTeamType.ENEMY)
                 continue;
 
             if (unit.unitType == Unit.UnitType.CAVELRY || unit.unitType == Unit.UnitType.BOWMAN)
@@ -176,11 +185,45 @@ public class EnemyAI : MonoBehaviour
 
                     commonHexes = grid.FilterHexes(neighbourHex.Coords, commonHexes, unit.unitType);
 
-                    scoreList.Add(new HexScoreObject(unit, commonHexes[0], 7));
+                    List<HexObject> teamFilterList = new List<HexObject>();
+
+                    foreach (HexObject obj in commonHexes)
+                        if (obj.unit == false)
+                            teamFilterList.Add(obj);
+
+                    if (teamFilterList.Count > 0)
+                    {
+                        HexObject commonHex = teamFilterList.FirstOrDefault();
+                        scoreList.Add(new HexScoreObject(unit, commonHex, 7));
+                    }
+                }
+                else
+                {
+                    //We are a Knight and cavalry is in range to us, lets move away
+                    //Search for the nearest friendly unit and move towards it and away from the enemy     
                 }
             }
         }
+        return scoreList;
+    }
 
+    public List<HexScoreObject> CheckMoving(HexObject hex, Unit unit)
+    {
+        List<HexScoreObject> scoreList = new List<HexScoreObject>();
+
+        //Get range 1 neighbours
+        List<HexObject> nearNeighbours = grid.GetNeighbours(hex.Coords, 1);
+        nearNeighbours = grid.FilterHexes(hex.Coords, nearNeighbours, unit.unitType);
+
+        foreach (HexObject nearNeighbour in nearNeighbours)
+        {
+            //List of hexes only in the outer ring
+            List<HexObject> outerRingNeighbours = grid.GetNeighbours(nearNeighbour.Coords, 2);
+
+            if (outerRingNeighbours.FirstOrDefault(h => h.unit != null && h.unit.unitTeam == Unit.UnitTeamType.PLAYER) == null)
+                if (nearNeighbour.unit == null)
+                    scoreList.Add(new HexScoreObject(unit, nearNeighbour, (int)Mathf.Ceil(3 * (hex.Coords.y / 2))));
+        }
         return scoreList;
     }
 

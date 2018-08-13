@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HexGrid : MonoBehaviour
 {
@@ -13,11 +14,10 @@ public class HexGrid : MonoBehaviour
     private int width = 5;
     private int height = 7;
     public List<HexObject> hexes;
+    public Text endText;
 
     void Awake()
     {
-        //Create map with index 0
-        CreateMap(0);
     }
 
     public void UpdateUnits()
@@ -28,10 +28,32 @@ public class HexGrid : MonoBehaviour
             if (hex.unit != null)
                 newUnits.Add(hex.unit);
         }
+
+        if (newUnits.FindAll(u => u.unitTeam == Unit.UnitTeamType.PLAYER).Count == 0)
+        {
+            //The player has lost
+            endText.text = "You lose!";
+        }
+
+        if (newUnits.FindAll(u => u.unitTeam == Unit.UnitTeamType.ENEMY).Count == 0)
+        {
+            //The player has won
+            endText.text = "You win!";
+        }
+
+
         this.units = newUnits;
     }
 
-    void CreateMap(int index)
+    public void RemoveMap()
+    {
+        foreach (HexObject hex in hexes)
+        {
+            GameObject.Destroy(hex.gameObject);
+        }
+    }
+
+    public void CreateMap(int index)
     {
         hexes = new List<HexObject>();
 
@@ -74,6 +96,11 @@ public class HexGrid : MonoBehaviour
             unit.SetUnitType(type);
 
             unit.unitTeam = i < width * 2 ? Unit.UnitTeamType.PLAYER : Unit.UnitTeamType.ENEMY;
+
+            Color unitColor = unit.unitTeam == Unit.UnitTeamType.PLAYER ? new Color(0.306f, 0.736f, 0.764f, 1) : new Color(0.773f, 0.412f, 0.353f, 1);
+            unit.transform.GetComponentInChildren<Renderer>().material.SetColor("_Color", unitColor);
+
+
             units.Add(unit);
         }
 

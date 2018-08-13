@@ -6,6 +6,8 @@ public class Maps
 {
 
     public static string[] mapArray = {
+        "ooooookkkoooooooMMooooooookkkoooooo",
+        "oobbocoookoMooooooMMoookkkoccoooooo",
         "ocoooooobooooooooMMoooooooookookooo"
     };
 }

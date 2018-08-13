@@ -30,6 +30,9 @@ public class InteractionHandler : MonoBehaviour
         //The HexObject class of the clicked object
         HexObject clickedHex = hex.GetComponent<HexObject>();
 
+        if (clickedHex == null)
+            return;
+
         //if the clicked hex is already highlighted, a unit is selecten and the unit can move to it, or attack the unit on there
         if (clickedHex.isHighlighted)
         {

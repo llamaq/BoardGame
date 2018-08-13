@@ -9,7 +9,6 @@ public class HexObject : MonoBehaviour
 
     private Mesh mesh;
     private MeshCollider meshCollider;
-    public Texture grassTexture;
     public bool isHighlighted = false;
     public Unit unit = null;
     public HexType hexType = HexType.GRASS;
