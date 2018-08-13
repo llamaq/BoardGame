@@ -6,11 +6,15 @@ public class InteractionHandler : MonoBehaviour
 {
 
     public HexGrid grid;
+    public GameHandler handler;
 
     void Update()
     {
-        if (Input.GetMouseButton(0))
-            HandleInput();
+        if (handler.isPlayerTurn)
+        {
+            if (Input.GetMouseButton(0))
+                HandleInput();
+        }
     }
 
     void HandleInput()
@@ -40,11 +44,22 @@ public class InteractionHandler : MonoBehaviour
                     //the clicked hex has an ememy on it, and we want to attack it
                     bool isDead = clickedHex.unit.Damage(grid.currentSelectedHex.unit.attack);
                     if (isDead)
-                        MoveUnit(clickedHex);
+                    {
+                        grid.UpdateUnits();
+
+                        if (grid.currentSelectedHex.unit.unitType != Unit.UnitType.BOWMAN)
+                            MoveUnit(clickedHex);
+                    }
                 }
             }
             else
                 MoveUnit(clickedHex);
+
+            foreach (HexObject hexObject in grid.hexes)
+                hexObject.SetHighlighted(false);
+
+            handler.NextTurn();
+            return;
         }
 
         //The clicked hex was not highlighted, which means it's a fresh click

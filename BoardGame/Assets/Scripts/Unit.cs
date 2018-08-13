@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
-    public enum UnitType { KNIGHT, BOWMEN, CAVELRY }
+    public enum UnitType { KNIGHT, BOWMAN, CAVELRY }
     public enum UnitTeamType { PLAYER, ENEMY }
 
     public Sprite[] textures = new Sprite[3];
@@ -24,7 +24,7 @@ public class Unit : MonoBehaviour
 
         switch (type)
         {
-            case UnitType.BOWMEN:
+            case UnitType.BOWMAN:
                 health = 1;
                 attack = 1;
                 break;

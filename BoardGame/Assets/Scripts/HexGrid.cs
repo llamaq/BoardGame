@@ -6,31 +6,40 @@ public class HexGrid : MonoBehaviour
 {
     public HexObject hexPrefab;
     public Unit unitPrefab;
+    public List<Unit> units;
 
     public HexObject currentSelectedHex = null;
 
     private int width = 5;
     private int height = 7;
-    public HexObject[] hexes;
-
+    public List<HexObject> hexes;
 
     void Awake()
     {
         //Create map with index 0
         CreateMap(0);
+    }
 
-
+    public void UpdateUnits()
+    {
+        List<Unit> newUnits = new List<Unit>();
+        foreach (HexObject hex in hexes)
+        {
+            if (hex.unit != null)
+                newUnits.Add(hex.unit);
+        }
+        this.units = newUnits;
     }
 
     void CreateMap(int index)
     {
-        hexes = new HexObject[width * height];
+        hexes = new List<HexObject>();
 
         for (int z = 0, i = 0; z < height; z++)
         {
             for (int x = 0; x < width; x++)
             {
-                hexes[i] = CreateCell(x, z, Maps.mapArray[index][i], i);
+                hexes.Add(CreateCell(x, z, Maps.mapArray[index][i], i));
                 i++;
             }
         }
@@ -58,14 +67,14 @@ public class HexGrid : MonoBehaviour
             switch (c)
             {
                 case 'c': type = Unit.UnitType.CAVELRY; break;
-                case 'b': type = Unit.UnitType.BOWMEN; break;
+                case 'b': type = Unit.UnitType.BOWMAN; break;
                 default: type = Unit.UnitType.KNIGHT; break;
 
             }
             unit.SetUnitType(type);
 
             unit.unitTeam = i < width * 2 ? Unit.UnitTeamType.PLAYER : Unit.UnitTeamType.ENEMY;
-
+            units.Add(unit);
         }
 
         return hexCell;
@@ -127,7 +136,7 @@ public class HexGrid : MonoBehaviour
                     }
                 }
                 break;
-            case Unit.UnitType.BOWMEN:
+            case Unit.UnitType.BOWMAN:
                 tempList = new List<HexObject>();
                 closeRangeHexes = GetNeighbours(selectedHex, 1);
 
@@ -146,8 +155,6 @@ public class HexGrid : MonoBehaviour
                 //Add the outer-ring to the new list, except if we cannot reach it
                 foreach (HexObject outerHex in tempList)
                 {
-                    Debug.Log("looping!");
-
                     if (outerHex.unit == null)
                         continue;
 
