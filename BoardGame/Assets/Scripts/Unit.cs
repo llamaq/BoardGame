@@ -15,7 +15,10 @@ public class Unit : MonoBehaviour
     public int health = 1;
     public int attack = 1;
 
-
+    ///<summary>
+    ///Set the Unit type, and the attack and health
+    ///</summary>
+    ///<param name="type">The unit type to set</param>
     public void SetUnitType(UnitType type)
     {
         this.unitType = type;
@@ -39,6 +42,11 @@ public class Unit : MonoBehaviour
         }
     }
 
+    ///<summary>
+    ///Do damage to the unit
+    ///</summary>
+    ///<param name="damage">The amount of damage to do</param>
+    ///<returns>Returns whether the unit has died or not</returns>
     public bool Damage(int damage)
     {
         this.health -= damage;

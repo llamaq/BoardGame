@@ -24,14 +24,14 @@ public class HexObject : MonoBehaviour
         new Vector3(-0.5f * outerRadius, 0f, -innerRadius)
     };
 
-    public static int[] triangles = {
+    private static int[] triangles = {
         0, 1, 2,
         0, 2, 3,
         0, 3, 4,
         0, 4, 5
     };
 
-    public static Vector3[] normals = {
+    private static Vector3[] normals = {
         -Vector3.forward,
         -Vector3.forward,
         -Vector3.forward,
@@ -40,7 +40,7 @@ public class HexObject : MonoBehaviour
         -Vector3.forward
     };
 
-    public static Vector2[] uv = {
+    private static Vector2[] uv = {
         new Vector2(-outerRadius, 0f),
         new Vector2(-0.5f * outerRadius, innerRadius),
         new Vector2(0.5f * outerRadius, innerRadius),
@@ -61,7 +61,10 @@ public class HexObject : MonoBehaviour
         Triangulate();
     }
 
-    public void Triangulate()
+    ///<summary>
+    ///Create the triangles for the hexagon
+    ///</summary>
+    private void Triangulate()
     {
         mesh.Clear();
         mesh.vertices = GetVertices();
@@ -76,7 +79,11 @@ public class HexObject : MonoBehaviour
         rend.material.SetColor("_Color", color);
     }
 
-    Vector3[] GetVertices()
+    ///<summary>
+    ///Get an array of the word location of the vertices
+    ///</summary>
+    ///<returns>Returns an array of the world location of the vertices</returns>
+    private Vector3[] GetVertices()
     {
         List<Vector3> verts = new List<Vector3>();
         Vector3 center = transform.localPosition;
@@ -87,6 +94,10 @@ public class HexObject : MonoBehaviour
         return verts.ToArray();
     }
 
+    ///<summary>
+    ///Set a hex highlighted or not
+    ///</summary>
+    ///<param name="highlight">True if a hex needs to be highlighted</param>
     public void SetHighlighted(bool highlight)
     {
         if (hexType != HexType.GRASS)
@@ -111,6 +122,11 @@ public class HexObject : MonoBehaviour
             rend.material.SetColor("_Color", Color.white);
     }
 
+    ///<summary>
+    ///Simple gets the unit type from the character
+    ///</summary>
+    ///<param name="c">The character</param>
+    ///<returns>Returns the HexType from the char</returns>
     public static HexType GetTypeFromChar(char c)
     {
         switch (c)

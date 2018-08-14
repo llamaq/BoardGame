@@ -11,13 +11,14 @@ public class InteractionHandler : MonoBehaviour
     void Update()
     {
         if (handler.isPlayerTurn)
-        {
             if (Input.GetMouseButton(0))
                 HandleInput();
-        }
     }
 
-    void HandleInput()
+    ///<summary>
+    ///Handles the left mouse input, used for moving units
+    ///</summary>
+    private void HandleInput()
     {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -25,15 +26,19 @@ public class InteractionHandler : MonoBehaviour
             ClickHex(hit.transform.gameObject);
     }
 
-    void ClickHex(GameObject hex)
+    ///<summary>
+    ///Called when a GameObject has been clicked
+    ///</summary>
+    private void ClickHex(GameObject hex)
     {
         //The HexObject class of the clicked object
         HexObject clickedHex = hex.GetComponent<HexObject>();
 
+        //If the clicked object is not a HexObject, return
         if (clickedHex == null)
             return;
 
-        //if the clicked hex is already highlighted, a unit is selecten and the unit can move to it, or attack the unit on there
+        //if the clicked hex is already highlighted, a unit is selected and the unit can move to it, or attack the unit on there
         if (clickedHex.isHighlighted)
         {
             //Check if the clicked hex has a unit on it
@@ -41,30 +46,47 @@ public class InteractionHandler : MonoBehaviour
             {
                 //If the unit on the hex is a player (our own team) the unit cannot move there, so do not highlight it
                 if (clickedHex.unit.unitTeam == Unit.UnitTeamType.PLAYER)
-                    return;
+                    SelectHex(clickedHex);
                 else
                 {
                     //the clicked hex has an ememy on it, and we want to attack it
                     bool isDead = clickedHex.unit.Damage(grid.currentSelectedHex.unit.attack);
                     if (isDead)
                     {
+                        //Unit died, so we need to update the Units in the grid
                         grid.UpdateUnits();
 
+                        //Bowmen do not move after they kill someone, but others do
                         if (grid.currentSelectedHex.unit.unitType != Unit.UnitType.BOWMAN)
                             MoveUnit(clickedHex);
                     }
                 }
+                //Attacked an enemy, end turn
+                handler.NextTurn();
             }
             else
+            {
+                //We want to move the selected unit                
                 MoveUnit(clickedHex);
 
-            foreach (HexObject hexObject in grid.hexes)
-                hexObject.SetHighlighted(false);
+                //Turn off the highlights
+                foreach (HexObject hexObject in grid.hexes)
+                    hexObject.SetHighlighted(false);
 
-            handler.NextTurn();
-            return;
+                //We moved
+                handler.NextTurn();
+                return;
+            }
         }
 
+        SelectHex(clickedHex);
+    }
+
+    ///<summary>
+    ///Select the clicked hex
+    ///</summary>
+    private void SelectHex(HexObject clickedHex)
+    {
         //The clicked hex was not highlighted, which means it's a fresh click
         grid.currentSelectedHex = clickedHex;
 
@@ -85,7 +107,11 @@ public class InteractionHandler : MonoBehaviour
             hexObject.SetHighlighted(true);
     }
 
-    public void MoveUnit(HexObject clickedHex)
+    ///<summary>
+    ///Moves the current selected unit to the given Hex
+    ///</summary>
+    ///<param name="clickedHex">The Hex to move to</param>
+    private void MoveUnit(HexObject clickedHex)
     {
         Unit currentSelectedUnit = grid.currentSelectedHex.unit;
         grid.currentSelectedHex.unit = null;

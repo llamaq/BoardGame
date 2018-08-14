@@ -14,20 +14,26 @@ public class EnemyAI : MonoBehaviour
         UpdateUnits();
     }
 
+    ///<summary>
+    ///Get the updated list of Units from HexGrid
+    ///</summary>
     private void UpdateUnits()
     {
         units = new List<Unit>();
         List<Unit> allUnits = grid.units;
 
         foreach (Unit unit in allUnits)
-        {
             if (unit.unitTeam == Unit.UnitTeamType.ENEMY)
                 units.Add(unit);
-        }
     }
 
+    ///<summary>
+    ///Execute the AI turn
+    ///</summary>
     public void ExecuteTurn()
     {
+        HexScoreObject highestScore = null;
+
         //Update the list to see if we lost any units
         UpdateUnits();
 
@@ -40,8 +46,7 @@ public class EnemyAI : MonoBehaviour
             scoreList.Add(unitScore);
         }
 
-        HexScoreObject highestScore = null;
-
+        //Loop through the scores and grab the highest one
         foreach (HexScoreObject scoreObject in scoreList)
         {
             if (highestScore == null)
@@ -52,6 +57,7 @@ public class EnemyAI : MonoBehaviour
                     highestScore = scoreObject;
         }
 
+        //There should always be a highest score, but we still check
         if (highestScore != null)
         {
             //Check what we want to do, if the tile is empty, just move, if there is an enemy on it: Attack! 
@@ -59,24 +65,32 @@ public class EnemyAI : MonoBehaviour
                 MoveUnit(highestScore.unit.transform.parent.GetComponent<HexObject>(), highestScore.hexObject);
             else
             {
+                //Do damage to the unit and check if the attacked unit has died
                 bool isDead = highestScore.hexObject.unit.Damage(grid.currentSelectedHex.unit.attack);
                 if (isDead)
                 {
+                    //Update the units in the grid
                     grid.UpdateUnits();
 
+                    //Bowmen do not move after killing a unit, others do
                     if (highestScore.unit.unitType != Unit.UnitType.BOWMAN)
                         MoveUnit(highestScore.unit.transform.parent.GetComponent<HexObject>(), highestScore.hexObject);
                 }
             }
         }
 
+        //End the turn
         GetComponent<GameHandler>().NextTurn();
     }
 
+    ///<summary>
+    ///Calculate the highest score for a unit    
+    ///</summary>
+    ///<param name="unit">The unit to calculate the score for</param>
+    ///<returns>Returns a HexScoreObject with the tile the unit should move to, and the score the move has</returns>
     public HexScoreObject CalculateScore(Unit unit)
     {
         List<HexScoreObject> scoreList = new List<HexScoreObject>();
-
         HexObject hex = unit.transform.parent.GetComponent<HexObject>();
 
         //==============================================
@@ -97,6 +111,7 @@ public class EnemyAI : MonoBehaviour
 
         HexScoreObject highestScore = null;
 
+        //Get the highest score
         foreach (HexScoreObject scoreObject in scoreList)
         {
             if (highestScore == null)
@@ -109,6 +124,12 @@ public class EnemyAI : MonoBehaviour
         return highestScore;
     }
 
+    ///<summary>
+    ///Check the tiles directly next to the given unit and calculate a possible score
+    ///</summary>
+    ///<param name="hex">The hex the unit is standing on</param>
+    ///<param name="unit">The unit</param>
+    ///<returns>Returns a list of possible hexes to move to, or perform an attack on</returns>
     public List<HexScoreObject> CheckNearestNeighbours(HexObject hex, Unit unit)
     {
         List<HexScoreObject> scoreList = new List<HexScoreObject>();
@@ -140,12 +161,20 @@ public class EnemyAI : MonoBehaviour
             else
             {
                 //We are a bowman and a Knight is next to us, lets just run away
-                //Search for the nearest friendly unit and move towards it and away from the enemy                    
+                //Search for the nearest friendly unit and move towards it and away from the enemy      
+
+                //NEVER FINISHED :/              
             }
         }
         return scoreList;
     }
 
+    ///<summary>
+    ///Check the tiles a bit further away than next to the unit
+    ///</summary>
+    ///<param name="hex">The hex the unit is standing on</param>
+    ///<param name="unit">The unit</param>
+    ///<returns>Returns a list of possible hexes to move to, or perform an attack on</returns>
     public List<HexScoreObject> CheckFurtherNeighbours(HexObject hex, Unit unit)
     {
         List<HexScoreObject> scoreList = new List<HexScoreObject>();
@@ -201,12 +230,20 @@ public class EnemyAI : MonoBehaviour
                 {
                     //We are a Knight and cavalry is in range to us, lets move away
                     //Search for the nearest friendly unit and move towards it and away from the enemy     
+
+                    //NEVER FINISHED :/
                 }
             }
         }
         return scoreList;
     }
 
+    ///<summary>
+    ///There is nothing really in range, so lets move towards the enemy in the south
+    ///</summary>
+    ///<param name="hex">The hex the unit is standing on</param>
+    ///<param name="unit">The unit</param>
+    ///<returns>Returns a list of possible hexes to move to, or perform an attack on</returns>
     public List<HexScoreObject> CheckMoving(HexObject hex, Unit unit)
     {
         List<HexScoreObject> scoreList = new List<HexScoreObject>();
@@ -227,6 +264,11 @@ public class EnemyAI : MonoBehaviour
         return scoreList;
     }
 
+    ///<summary>
+    ///Physically move the unit
+    ///</summary>
+    ///<param name="currentHex">The hex the unit is standing on</param>
+    ///<param name="newHex">The new hex to move to</param>
     public void MoveUnit(HexObject currentHex, HexObject newHex)
     {
         grid.currentSelectedHex = newHex;

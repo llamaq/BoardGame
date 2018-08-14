@@ -11,17 +11,10 @@ public class GameHandler : MonoBehaviour
     public GameObject menu;
     public GameObject menuButton;
 
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
+    ///<summary>
+    ///Opens a level
+    ///</summary>
+    ///<param name="level">The index of the level</param>
     public void OpenLevel(int level)
     {
         menu.SetActive(false);
@@ -29,25 +22,34 @@ public class GameHandler : MonoBehaviour
         menuButton.SetActive(true);
     }
 
+    ///<summary>
+    ///Back to the menu
+    ///</summary>
     public void BackToMenu()
     {
         menuButton.SetActive(false);
         grid.RemoveMap();
+        grid.endText.text = "";
         menu.SetActive(true);
     }
 
+    ///<summary>
+    ///Quit the game
+    ///</summary>
     public void Quit()
     {
         Application.Quit();
     }
 
+    ///<summary>
+    ///Used to execute the enemies turn, and take control from the player, and in reverse
+    ///</summary>
     public void NextTurn()
     {
         if (isPlayerTurn)
         {
             isPlayerTurn = false;
             //turnText.text = "Computer's turn";
-
             GetComponent<EnemyAI>().ExecuteTurn();
         }
         else
