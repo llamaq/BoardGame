@@ -41,44 +41,41 @@ public class InteractionHandler : MonoBehaviour
         //if the clicked hex is already highlighted, a unit is selected and the unit can move to it, or attack the unit on there
         if (clickedHex.isHighlighted)
         {
-            //Check if the clicked hex has a unit on it
-            if (clickedHex.unit != null)
+            // If the tile has no unit on it, we can move to it directly
+            if(clickedHex.unit == null)
             {
-                //If the unit on the hex is a player (our own team) the unit cannot move there, so do not highlight it
-                if (clickedHex.unit.unitTeam == Unit.UnitTeamType.PLAYER)
-                    SelectHex(clickedHex);
-                else
-                {
-                    //the clicked hex has an ememy on it, and we want to attack it
-                    bool isDead = clickedHex.unit.Damage(grid.currentSelectedHex.unit.attack);
-                    if (isDead)
-                    {
-                        //Unit died, so we need to update the Units in the grid
-                        grid.UpdateUnits();
-
-                        //Bowmen do not move after they kill someone, but others do
-                        if (grid.currentSelectedHex.unit.unitType != Unit.UnitType.BOWMAN)
-                            MoveUnit(clickedHex);
-                    }
-                }
-                //Attacked an enemy, end turn
-                handler.NextTurn();
-            }
-            else
-            {
-                //We want to move the selected unit                
+                // Move the selected unit to the clicked hex
                 MoveUnit(clickedHex);
 
                 //Turn off the highlights
                 foreach (HexObject hexObject in grid.hexes)
                     hexObject.SetHighlighted(false);
 
-                //We moved
                 handler.NextTurn();
-                return;
+
+            }
+
+            // Nothing special to do if the unit is friendly, just select the hex at the end of the method
+            // else if(clickedHex.unit.unitTeam == Unit.UnitTeamType.PLAYER)
+            // {
+            // }
+
+            // If the unit is an enemy, attack it and go to the next turn
+            else if(clickedHex.unit.unitTeam == Unit.UnitTeamType.ENEMY)
+            {
+                bool isDead = clickedHex.unit.Damage(grid.currentSelectedHex.unit.attack);
+                if (isDead)
+                {
+                    //Unit died, so we need to update the Units in the grid
+                    grid.UpdateUnits();
+
+                    //Bowmen do not move after they kill someone, but others do
+                    if (grid.currentSelectedHex.unit.unitType != Unit.UnitType.BOWMAN)
+                        MoveUnit(clickedHex);
+                }
+                handler.NextTurn();
             }
         }
-
         SelectHex(clickedHex);
     }
 
